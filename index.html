@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mộc Quán — Nhập đơn</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f0e8; min-height: 100vh; font-size: 16px; }
+
+/* Header */
+.header { background: #3d2b1f; color: #f5f0e8; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.header-title { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+.header-sub { font-size: 12px; opacity: 0.55; margin-top: 2px; }
+.cart-pill { background: #c8a96e; color: #3d2b1f; border-radius: 20px; padding: 5px 12px; font-size: 13px; font-weight: 700; }
+
+.section-label { font-size: 12px; font-weight: 700; color: #8b7355; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.divider { height: 1px; background: #e0d8cc; margin: 0 16px; }
+
+/* ── MENU SECTION ── */
+.menu-wrap { padding: 16px 16px 0; }
+
+/* Category grid — 2 coloane fixe */
+.cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+.cat-card { background: #fff; border: 2px solid #e0d5c5; border-radius: 14px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.15s; user-select: none; }
+.cat-card.active { background: #3d2b1f; border-color: #3d2b1f; }
+.cat-card-icon { font-size: 26px; margin-bottom: 5px; }
+.cat-card-name { font-size: 14px; font-weight: 600; color: #4a3520; line-height: 1.3; }
+.cat-card.active .cat-card-name { color: #f5f0e8; }
+.cat-card-count { font-size: 11px; color: #a08060; margin-top: 2px; }
+.cat-card.active .cat-card-count { color: #c8a96e; }
+.cat-card:active { transform: scale(0.96); }
+
+/* Item grid — 1 cột full width, to rõ */
+.item-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.item-card { background: #fff; border-radius: 14px; border: 1.5px solid #e8e0d0; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
+.item-card.has-qty { border-color: #c8a96e; background: #fffdf8; }
+.item-left { flex: 1; }
+.item-name { font-size: 16px; font-weight: 600; color: #2d1f0f; line-height: 1.3; }
+.item-sub { font-size: 12px; color: #a08060; margin-top: 2px; }
+.item-price { font-size: 15px; font-weight: 700; color: #7a4f2a; margin-top: 4px; }
+.qty-ctrl { display: flex; align-items: center; gap: 10px; margin-left: 14px; flex-shrink: 0; }
+.qty-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #d5c9b5; background: #f5f0e8; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #4a3520; cursor: pointer; user-select: none; line-height: 1; font-weight: 300; }
+.qty-btn:active { background: #e0d8cc; transform: scale(0.9); }
+.qty-num { font-size: 18px; font-weight: 700; color: #c8a96e; min-width: 24px; text-align: center; }
+.qty-num.zero { color: #d0c4b0; }
+
+/* ── GHI CHÚ ── */
+.note-wrap { padding: 16px; }
+.note-input { width: 100%; background: #fff; border: 1.5px solid #e0d5c5; border-radius: 12px; padding: 12px 14px; font-size: 15px; color: #2d1f0f; font-family: inherit; resize: none; outline: none; }
+.note-input::placeholder { color: #c0ad95; }
+.note-input:focus { border-color: #c8a96e; }
+
+/* ── KHÁCH HÀNG ── */
+.cust-wrap { padding: 16px; }
+.cust-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.cust-btn { background: #fff; border: 2px solid #e0d5c5; border-radius: 12px; padding: 12px; text-align: center; font-size: 15px; font-weight: 600; color: #6b5840; cursor: pointer; transition: all 0.15s; user-select: none; }
+.cust-btn.active { background: #3d2b1f; border-color: #3d2b1f; color: #f5f0e8; }
+.cust-btn:active { transform: scale(0.96); }
+
+/* New customer form */
+.new-cust-form { background: #fff; border-radius: 14px; border: 1.5px solid #e0d5c5; padding: 14px; display: none; flex-direction: column; gap: 10px; }
+.new-cust-form.show { display: flex; }
+.form-row { display: flex; flex-direction: column; gap: 4px; }
+.form-label { font-size: 12px; font-weight: 600; color: #8b7355; }
+.form-input { background: #faf7f2; border: 1.5px solid #e0d5c5; border-radius: 10px; padding: 11px 13px; font-size: 15px; color: #2d1f0f; font-family: inherit; outline: none; }
+.form-input:focus { border-color: #c8a96e; background: #fff; }
+.form-input::placeholder { color: #c8b99a; }
+.form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ── GIỎ HÀNG ── */
+.cart-wrap { padding: 0 16px 16px; }
+.cart-box { background: #fff; border-radius: 14px; border: 1.5px solid #e8e0d0; overflow: hidden; }
+.cart-empty { padding: 20px; text-align: center; font-size: 15px; color: #c0ad95; }
+.cart-row { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f2ece2; }
+.cart-row:last-child { border-bottom: none; }
+.cart-name { font-size: 15px; color: #2d1f0f; font-weight: 500; }
+.cart-detail { font-size: 12px; color: #a08060; margin-top: 1px; }
+.cart-amount { font-size: 15px; font-weight: 700; color: #7a4f2a; }
+
+/* ── BOTTOM BAR ── */
+.bottom-bar { padding: 14px 16px 28px; background: #f5f0e8; border-top: 1px solid #e0d8cc; }
+.total-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+.total-label { font-size: 16px; color: #6b5840; font-weight: 500; }
+.total-val { font-size: 26px; font-weight: 800; color: #2d1f0f; }
+.send-btn { width: 100%; background: #3d2b1f; color: #f5f0e8; border: none; border-radius: 16px; padding: 18px; font-size: 17px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.send-btn:active { transform: scale(0.98); background: #5a3f2b; }
+.send-btn:disabled { background: #b0a898; cursor: not-allowed; transform: none; }
+
+/* Toast */
+.toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(16px); background: #2d1f0f; color: #f5f0e8; padding: 12px 22px; border-radius: 24px; font-size: 14px; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 999; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { background: #7a2020; }
+
+.spacer { height: 16px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <div class="header-title">Mộc Quán</div>
+    <div class="header-sub">Nhập đơn hàng</div>
+  </div>
+  <div class="cart-pill" id="cartPill">0 món</div>
+</div>
+
+<!-- ── CHỌN MÓN ── -->
+<div class="menu-wrap">
+  <div class="section-label">Chọn món</div>
+
+  <!-- Nhóm món: grid 2 cột -->
+  <div class="cat-grid" id="catGrid"></div>
+
+  <!-- Danh sách món theo nhóm -->
+  <div class="item-list" id="itemList"></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── GHI CHÚ ── -->
+<div class="note-wrap">
+  <div class="section-label">Ghi chú</div>
+  <textarea class="note-input" id="noteInput" rows="2" placeholder="Ít đường, không đá, dị ứng..."></textarea>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── KHÁCH HÀNG ── -->
+<div class="cust-wrap">
+  <div class="section-label">Khách hàng</div>
+  <div class="cust-type-grid">
+    <div class="cust-btn active" id="btnCu" onclick="selectCust('Cũ')">Khách cũ</div>
+    <div class="cust-btn" id="btnMoi" onclick="selectCust('Mới')">Khách mới</div>
+  </div>
+  <!-- Form khách mới — ẩn mặc định -->
+  <div class="new-cust-form" id="newCustForm">
+    <div class="form-row">
+      <div class="form-label">Tên khách</div>
+      <input class="form-input" id="custName" type="text" placeholder="Nguyễn Văn A" autocomplete="off">
+    </div>
+    <div class="form-2col">
+      <div class="form-row">
+        <div class="form-label">Số điện thoại</div>
+        <input class="form-input" id="custPhone" type="tel" placeholder="09xxxxxxxx">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Tuổi</div>
+        <input class="form-input" id="custAge" type="number" placeholder="25" min="1" max="120">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── GIỎ HÀNG ── -->
+<div class="cart-wrap">
+  <div class="section-label" style="padding-top:16px">Đơn hàng</div>
+  <div class="cart-box">
+    <div class="cart-empty" id="cartEmpty">Chưa chọn món nào</div>
+    <div id="cartItems"></div>
+  </div>
+</div>
+
+<!-- ── TỔNG & GỬI ── -->
+<div class="bottom-bar">
+  <div class="total-row">
+    <div class="total-label">Tổng cộng</div>
+    <div class="total-val" id="totalVal">0đ</div>
+  </div>
+  <button class="send-btn" id="sendBtn" onclick="submitOrder()">Gửi đơn vào Sheet</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────
+// CẤU HÌNH
+// ─────────────────────────────────────────
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzSvnxAc4dn3D7JqIbg5OKlXstNiTaG4nNR_byzRoRZagMaPGaOX1uwFkCuQNIuOCvC/exec';
+
+const CAT_ICONS = {
+  'Cà phê':   '☕',
+  'Sữa chua': '🍓',
+  'Trà sữa':  '🧋',
+  'Latte':    '🍵',
+  'Trà':      '🌿',
+  'Sinh tố':  '🥤',
+  'Nước ép':  '🍊',
+  'Nước ngọt':'🧃',
+};
+
+const MENU = [
+  { id:'CF01', name:'Cà phê đen',               cat:'Cà phê',   size:'M', price:16000 },
+  { id:'CF02', name:'Cà phê sữa',                cat:'Cà phê',   size:'M', price:20000 },
+  { id:'CF03', name:'Bạc xỉu',                   cat:'Cà phê',   size:'M', price:20000 },
+  { id:'CF04', name:'Cà phê muối',               cat:'Cà phê',   size:'L', price:25000 },
+  { id:'CF05', name:'Cà phê muối',               cat:'Cà phê',   size:'M', price:20000 },
+  { id:'CF06', name:'Cà phê sữa tươi',           cat:'Cà phê',   size:'L', price:25000 },
+  { id:'CF07', name:'Cà phê sữa tươi',           cat:'Cà phê',   size:'M', price:20000 },
+  { id:'CF08', name:'Phindi hạnh nhân',          cat:'Cà phê',   size:'L', price:25000 },
+  { id:'CF09', name:'Phindi hạnh nhân',          cat:'Cà phê',   size:'M', price:20000 },
+  { id:'SC01', name:'Sữa chua dâu',              cat:'Sữa chua', size:'M', price:25000 },
+  { id:'SC02', name:'Sữa chua chanh dây',        cat:'Sữa chua', size:'M', price:25000 },
+  { id:'SC03', name:'Sữa chua việt quất',        cat:'Sữa chua', size:'M', price:25000 },
+  { id:'TS01', name:'Trà sữa truyền thống',      cat:'Trà sữa',  size:'L', price:25000 },
+  { id:'TS02', name:'Trà sữa truyền thống',      cat:'Trà sữa',  size:'M', price:20000 },
+  { id:'TS03', name:'Trà sữa khoai môn',         cat:'Trà sữa',  size:'L', price:25000 },
+  { id:'TS04', name:'Trà sữa khoai môn',         cat:'Trà sữa',  size:'M', price:20000 },
+  { id:'TS05', name:'Trà sữa ô long',            cat:'Trà sữa',  size:'L', price:25000 },
+  { id:'TS06', name:'Trà sữa ô long',            cat:'Trà sữa',  size:'M', price:20000 },
+  { id:'TS07', name:'Trà sữa gạo',               cat:'Trà sữa',  size:'L', price:25000 },
+  { id:'TS08', name:'Trà sữa gạo',               cat:'Trà sữa',  size:'M', price:20000 },
+  { id:'LT01', name:'Matcha latte',              cat:'Latte',    size:'L', price:30000 },
+  { id:'LT02', name:'Matcha latte',              cat:'Latte',    size:'M', price:25000 },
+  { id:'LT03', name:'Cacao latte',               cat:'Latte',    size:'L', price:30000 },
+  { id:'LT04', name:'Cacao latte',               cat:'Latte',    size:'M', price:25000 },
+  { id:'TR01', name:'Trà trái cây nhiệt đới',    cat:'Trà',      size:'M', price:25000 },
+  { id:'TR02', name:'Trà dâu',                   cat:'Trà',      size:'M', price:25000 },
+  { id:'TR03', name:'Trà đào',                   cat:'Trà',      size:'M', price:25000 },
+  { id:'TR04', name:'Trà tắc chanh dây',         cat:'Trà',      size:'M', price:20000 },
+  { id:'TR05', name:'Trà Lipton thảo mộc',       cat:'Trà',      size:'M', price:25000 },
+  { id:'TR06', name:'Trà xanh sữa hạt nổ củ năng', cat:'Trà',   size:'M', price:25000 },
+  { id:'TR07', name:'Trà dâu tằm hạt đác',      cat:'Trà',      size:'M', price:20000 },
+  { id:'TR08', name:'Rau má',                    cat:'Trà',      size:'M', price:20000 },
+  { id:'TR09', name:'Dứa me rim hạt đác',        cat:'Trà',      size:'M', price:20000 },
+  { id:'ST01', name:'Sinh tố',                   cat:'Sinh tố',  size:'M', price:25000 },
+  { id:'NE01', name:'Nước ép',                   cat:'Nước ép',  size:'M', price:25000 },
+  { id:'NN01', name:'Nước ngọt',                 cat:'Nước ngọt',size:'M', price:15000 },
+];
+// ─────────────────────────────────────────
+
+let currentCat = '';
+let qty = {};
+let selectedCust = 'Cũ';
+let orderCount = 1;
+
+// Build categories
+const cats = [...new Set(MENU.map(m => m.cat))];
+const catGrid = document.getElementById('catGrid');
+cats.forEach((c, i) => {
+  const count = MENU.filter(m => m.cat === c).length;
+  const card = document.createElement('div');
+  card.className = 'cat-card' + (i === 0 ? ' active' : '');
+  card.id = 'cat_' + c;
+  card.innerHTML = `
+    <div class="cat-card-icon">${CAT_ICONS[c] || '🥤'}</div>
+    <div class="cat-card-name">${c}</div>
+    <div class="cat-card-count">${count} món</div>
+  `;
+  card.onclick = () => selectCat(c);
+  catGrid.appendChild(card);
+});
+currentCat = cats[0];
+renderItems();
+
+function selectCat(cat) {
+  currentCat = cat;
+  cats.forEach(c => {
+    const el = document.getElementById('cat_' + c);
+    if (el) el.className = 'cat-card' + (c === cat ? ' active' : '');
+  });
+  renderItems();
+  // scroll items into view
+  document.getElementById('itemList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderItems() {
+  const list = document.getElementById('itemList');
+  const items = MENU.filter(m => m.cat === currentCat);
+  list.innerHTML = items.map(m => {
+    const q = qty[m.id] || 0;
+    return `
+      <div class="item-card ${q > 0 ? 'has-qty' : ''}" id="card_${m.id}">
+        <div class="item-left">
+          <div class="item-name">${m.name}</div>
+          <div class="item-sub">${m.id} · Size ${m.size}</div>
+          <div class="item-price">${m.price.toLocaleString('vi-VN')}đ</div>
+        </div>
+        <div class="qty-ctrl">
+          <div class="qty-btn" onclick="changeQty('${m.id}',-1)">−</div>
+          <div class="qty-num ${q === 0 ? 'zero' : ''}" id="q_${m.id}">${q}</div>
+          <div class="qty-btn" onclick="changeQty('${m.id}',1)">+</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function changeQty(id, delta) {
+  qty[id] = Math.max(0, (qty[id] || 0) + delta);
+  const qEl = document.getElementById('q_' + id);
+  const cEl = document.getElementById('card_' + id);
+  if (qEl) { qEl.textContent = qty[id]; qEl.className = 'qty-num' + (qty[id] === 0 ? ' zero' : ''); }
+  if (cEl) { cEl.className = 'item-card' + (qty[id] > 0 ? ' has-qty' : ''); }
+  updateCart();
+}
+
+function selectCust(val) {
+  selectedCust = val;
+  document.getElementById('btnCu').className  = 'cust-btn' + (val === 'Cũ'  ? ' active' : '');
+  document.getElementById('btnMoi').className = 'cust-btn' + (val === 'Mới' ? ' active' : '');
+  const form = document.getElementById('newCustForm');
+  form.className = 'new-cust-form' + (val === 'Mới' ? ' show' : '');
+}
+
+function updateCart() {
+  const items = MENU.filter(m => qty[m.id] > 0);
+  const total  = items.reduce((s, m) => s + m.price * qty[m.id], 0);
+  const count  = items.reduce((s, m) => s + qty[m.id], 0);
+
+  document.getElementById('cartPill').textContent = count + ' món';
+  document.getElementById('totalVal').textContent = total.toLocaleString('vi-VN') + 'đ';
+  document.getElementById('cartEmpty').style.display = items.length ? 'none' : 'block';
+  document.getElementById('cartItems').innerHTML = items.map(m => `
+    <div class="cart-row">
+      <div>
+        <div class="cart-name">${m.name} (${m.size})</div>
+        <div class="cart-detail">x${qty[m.id]} · ${m.price.toLocaleString('vi-VN')}đ/cái</div>
+      </div>
+      <div class="cart-amount">${(m.price * qty[m.id]).toLocaleString('vi-VN')}đ</div>
+    </div>`).join('');
+}
+
+function showToast(msg, isErr = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' error' : '');
+  setTimeout(() => t.className = 'toast', 2600);
+}
+
+async function submitOrder() {
+  const items = MENU.filter(m => qty[m.id] > 0);
+  if (!items.length) { showToast('Chưa chọn món nào!', true); return; }
+  if (APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbzSvnxAc4dn3D7JqIbg5OKlXstNiTaG4nNR_byzRoRZagMaPGaOX1uwFkCuQNIuOCvC/exec') { showToast('Chưa cài Apps Script URL!', true); return; }
+
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true; btn.textContent = 'Đang gửi...';
+
+  const now = new Date();
+  const ts  = now.toLocaleString('vi-VN');
+  const madon = 'DH' + now.getFullYear().toString().slice(-2)
+    + String(now.getMonth()+1).padStart(2,'0')
+    + String(now.getDate()).padStart(2,'0')
+    + String(orderCount).padStart(3,'0');
+
+  const custName  = document.getElementById('custName')?.value.trim()  || '';
+  const custPhone = document.getElementById('custPhone')?.value.trim() || '';
+  const custAge   = document.getElementById('custAge')?.value.trim()   || '';
+
+  const rows = items.map(m => ({
+    maDon:      madon,
+    thoiGian:   ts,
+    maMon:      m.id,
+    soLuong:    qty[m.id],
+    thanhTien:  m.price * qty[m.id],
+    ghiChu:     document.getElementById('noteInput').value.trim(),
+    khachHang:  selectedCust,
+    tenKhach:   custName,
+    sdt:        custPhone,
+    tuoi:       custAge,
+  }));
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rows }),
+    });
+    orderCount++;
+    showToast('Đã gửi đơn thành công! 🎉');
+    qty = {};
+    document.getElementById('noteInput').value = '';
+    if (document.getElementById('custName'))  document.getElementById('custName').value  = '';
+    if (document.getElementById('custPhone')) document.getElementById('custPhone').value = '';
+    if (document.getElementById('custAge'))   document.getElementById('custAge').value   = '';
+    renderItems();
+    updateCart();
+  } catch (e) {
+    showToast('Lỗi kết nối. Thử lại!', true);
+  }
+  btn.disabled = false; btn.textContent = 'Gửi đơn vào Sheet';
+}
+</script>
+</body>
+</html>
